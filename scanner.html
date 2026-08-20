@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner - Attenda 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- HTML5 QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { brandOrange: '#ff6b00', brandDark: '#0f172a' }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 flex h-screen font-sans overflow-hidden antialiased">
+
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <div>
+            <!-- Brand Logo -->
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-graduation-cap"></i>
+                Attenda <span>2026</span>
+            </div>
+            
+            <!-- Navigation Links -->
+            <ul class="sidebar-nav">
+                <li class="{% if request.endpoint == 'index' %}active{% endif %}">
+                    <a href="{{ url_for('index') }}">
+                        <i class="fa-solid fa-house"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'scanner' %}active{% endif %}">
+                    <a href="{{ url_for('scanner') }}">
+                        <i class="fa-solid fa-qrcode"></i>
+                        QR Scanner
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'register' %}active{% endif %}">
+                    <a href="{{ url_for('register') }}">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Register Student
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'students' %}active{% endif %}">
+                    <a href="{{ url_for('students') }}">
+                        <i class="fa-solid fa-users"></i>
+                        Student Database
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'reports' %}active{% endif %}">
+                    <a href="{{ url_for('reports') }}">
+                        <i class="fa-solid fa-file-lines"></i>
+                        Reports
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'settings' %}active{% endif %}">
+                    <a href="{{ url_for('settings') }}">
+                        <i class="fa-solid fa-gear"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Watermark Footer -->
+        <div class="sidebar-footer">
+            <span class="watermark-text">By Ransithu Wave Lk</span>
+            <span class="watermark-version">Version 1.1</span>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content flex-1 flex flex-col h-screen">
+        <!-- Topbar -->
+        <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center z-10 border-b border-gray-200">
+            <h1 class="text-xl font-bold text-slate-800">QR Code Attendance Scanner</h1>
+            <span class="bg-brandDark text-brandOrange text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">Live Scanner</span>
+        </header>
+
+        <!-- Content Area -->
+        <main class="flex-1 overflow-y-auto p-8 flex justify-center items-start pt-12">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 w-full max-w-md text-center">
+                <h2 class="text-xl font-black text-slate-800 mb-2">Attendance QR Reader</h2>
+                <p class="text-sm text-gray-500 mb-6 font-medium">කැමරාව ඉදිරියට ශිෂ්‍ය QR කේතය අල්ලන්න.</p>
+                
+                <!-- Scanner Viewport -->
+                <div id="reader" class="w-full rounded-2xl overflow-hidden border-4 border-gray-100 shadow-inner"></div>
+                
+                <!-- Success Message Box (Hidden by default) -->
+                <div id="result" class="mt-6 hidden p-4 rounded-xl bg-green-50 text-green-700 font-bold border border-green-200 flex flex-col items-center justify-center gap-2 transition-all">
+                    <i class="fa-solid fa-circle-check text-2xl"></i>
+                    <span id="result-text">Scan Successful! Redirecting...</span>
+                </div>
+                
+                <!-- Scan Status / Loading -->
+                <p id="scan-status" class="mt-6 text-sm font-bold text-brandOrange animate-pulse">
+                    <i class="fa-solid fa-camera mr-2"></i> Scanning for QR Codes...
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            // ස්කෑන් වුණු ගමන් කැමරාව නවත්තනවා (එකම එක දිගට ස්කෑන් වෙන එක නවත්තන්න)
+            html5QrcodeScanner.clear();
+            
+            // UI එක අප්ඩේට් කරනවා
+            document.getElementById('scan-status').classList.add('hidden');
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('result-text');
+            
+            resultDiv.classList.remove('hidden');
+            resultText.innerText = "ID: " + decodedText + " සොයාගත්තා. කරුණාකර රැඳී සිටින්න...";
+
+            // අදාළ ශිෂ්‍යයාගේ Attendance පේජ් එකට Redirect කරනවා
+            setTimeout(() => {
+                window.location.href = "/scan/" + decodedText;
+            }, 800); // මිලි තත්පර 800 ක ප්‍රමාදයකින් පසු රීඩිරෙක්ට් වේ
+        }
+
+        function onScanFailure(error) {
+            // QR එකක් හමුවන තුරු සිදුවන සාමාන්‍ය තත්ත්වයකි, මෙහිදී කිසිදු ක්‍රියාවක් අවශ්‍ය නොවේ
+        }
+
+        // කැමරාවේ සෙටින්ග්ස් සහ ස්කෑනර් එක ආරම්භ කිරීම
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { 
+                fps: 15, 
+                qrbox: {width: 250, height: 250}, 
+                aspectRatio: 1.0 
+            },
+            /* verbose= */ false
+        );
+        
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
+
+    <style>
+    /* =========================================
+       NEW SIDEBAR STYLING 
+    ========================================= */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 260px;
+        background-color: #0c1222; /* Dark Navy Background */
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 20px 0 0 0;
+        z-index: 1000;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+    }
+    .sidebar-brand {
+        font-size: 1.6rem;
+        font-weight: 800;
+        padding: 10px 20px 30px 25px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .sidebar-brand i {
+        color: #ffb800; /* Yellow Cap */
+        font-size: 1.5rem;
+    }
+    .sidebar-brand span {
+        color: #ff5722; /* Orange text */
+    }
+    .sidebar-nav {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        flex-grow: 1;
+    }
+    .sidebar-nav li {
+        margin-bottom: 8px;
+    }
+    .sidebar-nav li a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 14px 25px;
+        color: #8a99af; /* Inactive greyish text */
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    .sidebar-nav li a i {
+        font-size: 1.2rem;
+        width: 25px;
+        text-align: center;
+    }
+    .sidebar-nav li a:hover {
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    /* Active (Orange) Style */
+    .sidebar-nav li.active a {
+        background-color: #ff5722;
+        color: #fff;
+        border-radius: 0 30px 30px 0;
+        margin-right: 25px;
+        box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
+    }
+    /* Watermark Footer */
+    .sidebar-footer {
+        padding: 20px;
+        text-align: center;
+        font-size: 0.75rem;
+        border-top: 1px solid #1e293b;
+        letter-spacing: 1px;
+        background-color: #090d1a;
+    }
+    .sidebar-footer .watermark-text {
+        color: #64748b;
+        margin-bottom: 5px;
+        display: block;
+        text-transform: uppercase;
+    }
+    .sidebar-footer .watermark-version {
+        color: #ff5722;
+        font-weight: 800;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+    /* Main Content Adjustment */
+    .main-content {
+        margin-left: 260px;
+        width: calc(100% - 260px);
+    }
+    </style>
+
+</body>
+</html>

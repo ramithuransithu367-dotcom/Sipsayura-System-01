@@ -1,0 +1,5 @@
+{
+    "school_name": "Sipsayura",
+    "unit_name": "Attendance System ",
+    "whatsapp_template": "ආයුබෝවන් {name},\r\nඔබගේ ලියාපදිංචිය සාර්ථකයි! 🎉\r\n\r\n🏫 {school} - {unit}\r\n🆔 ඔබගේ අංකය: *{index}*"
+}

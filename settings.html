@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Attenda 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { brandOrange: '#ff6b00' } } } }
+    </script>
+</head>
+<body class="bg-gray-50 flex h-screen font-sans overflow-hidden">
+
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <div>
+            <!-- Brand Logo -->
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-graduation-cap"></i>
+                Attenda <span>2026</span>
+            </div>
+            
+            <!-- Navigation Links -->
+            <ul class="sidebar-nav">
+                <li class="{% if request.endpoint == 'index' %}active{% endif %}">
+                    <a href="{{ url_for('index') }}">
+                        <i class="fa-solid fa-house"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'scanner' %}active{% endif %}">
+                    <a href="{{ url_for('scanner') }}">
+                        <i class="fa-solid fa-qrcode"></i>
+                        QR Scanner
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'register' %}active{% endif %}">
+                    <a href="{{ url_for('register') }}">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Register Student
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'students' %}active{% endif %}">
+                    <a href="{{ url_for('students') }}">
+                        <i class="fa-solid fa-users"></i>
+                        Student Database
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'reports' %}active{% endif %}">
+                    <a href="{{ url_for('reports') }}">
+                        <i class="fa-solid fa-file-lines"></i>
+                        Reports
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'settings' %}active{% endif %}">
+                    <a href="{{ url_for('settings') }}">
+                        <i class="fa-solid fa-gear"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Watermark Footer -->
+        <div class="sidebar-footer">
+            <span class="watermark-text">By Ransithu Wave Lk</span>
+            <span class="watermark-version">Version 1.1</span>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content flex-1 overflow-y-auto h-screen p-8">
+        <h2 class="text-2xl font-bold mb-6 text-slate-800">System Settings</h2>
+        
+        <!-- WhatsApp & System Customization -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 w-full mb-8">
+            <h3 class="font-bold text-slate-800 border-b pb-3 mb-5 flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-brandOrange"></i> WhatsApp & System Customization
+            </h3>
+            
+            {% if success_msg %}
+            <div class="bg-green-100 text-green-700 p-3 rounded-lg mb-4 text-sm font-bold border border-green-200">
+                {{ success_msg }}
+            </div>
+            {% endif %}
+
+            <form method="POST" class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase mb-1">School Name</label>
+                        <input type="text" name="school_name" value="{{ settings.school_name }}" required class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-brandOrange">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Unit / Department Name</label>
+                        <input type="text" name="unit_name" value="{{ settings.unit_name }}" required class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-brandOrange">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">WhatsApp Message Template</label>
+                    <textarea name="whatsapp_template" rows="5" required class="w-full border border-gray-300 rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-brandOrange">{{ settings.whatsapp_template }}</textarea>
+                    <p class="text-[11px] text-gray-400 mt-1">Available tags: <code>{name}</code>, <code>{index}</code>, <code>{school}</code>, <code>{unit}</code></p>
+                </div>
+
+                <button type="submit" class="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Settings
+                </button>
+            </form>
+        </div>
+
+        <!-- Class Management Section -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h3 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2 border-b pb-3">
+                <i class="fa-solid fa-chalkboard-user text-brandOrange"></i> Manage Grades, Classes & Teachers
+            </h3>
+            
+            <form method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <input type="hidden" name="action" value="add_class">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Grade</label>
+                    <input type="text" name="grade" placeholder="e.g. Grade 10" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brandOrange">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Class Name</label>
+                    <input type="text" name="class_name" placeholder="e.g. Section A" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brandOrange">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Teacher Name</label>
+                    <input type="text" name="teacher_name" placeholder="e.g. Mr. Perera" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brandOrange">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-brandOrange hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-lg text-sm shadow transition">
+                        + Add Class
+                    </button>
+                </div>
+            </form>
+
+            <!-- Added Classes Table -->
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-500 text-xs uppercase font-bold border-b border-gray-200">
+                            <th class="px-4 py-3">Grade</th>
+                            <th class="px-4 py-3">Class Name</th>
+                            <th class="px-4 py-3">Teacher Name</th>
+                            <th class="px-4 py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-gray-600 divide-y divide-gray-100">
+                        {% for c in classes %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-4 py-3 font-bold text-slate-800">{{ c.grade }}</td>
+                            <td class="px-4 py-3 font-semibold text-slate-700">{{ c.class_name }}</td>
+                            <td class="px-4 py-3 text-slate-600">{{ c.teacher_name }}</td>
+                            <td class="px-4 py-3 text-center">
+                                <form method="POST" onsubmit="return confirm('මෙම පන්තිය ඉවත් කිරීමට අවශ්‍ය බව විශ්වාසද?');">
+                                    <input type="hidden" name="action" value="delete_class">
+                                    <input type="hidden" name="class_id" value="{{ c.id }}">
+                                    <button type="submit" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded text-xs transition flex items-center justify-center gap-1 mx-auto">
+                                        <i class="fa-solid fa-trash-can"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="px-4 py-8 text-center text-gray-400 font-medium">
+                                පන්ති කිසිවක් තවම එකතු කර නොමැත.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <style>
+/* =========================================
+   NEW SIDEBAR STYLING 
+========================================= */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
+    background-color: #0c1222; /* Dark Navy Background */
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 0 0 0;
+    z-index: 1000;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+}
+.sidebar-brand {
+    font-size: 1.6rem;
+    font-weight: 800;
+    padding: 10px 20px 30px 25px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sidebar-brand i {
+    color: #ffb800; /* Yellow Cap */
+    font-size: 1.5rem;
+}
+.sidebar-brand span {
+    color: #ff5722; /* Orange text */
+}
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+.sidebar-nav li {
+    margin-bottom: 8px;
+}
+.sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 25px;
+    color: #8a99af; /* Inactive greyish text */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.sidebar-nav li a i {
+    font-size: 1.2rem;
+    width: 25px;
+    text-align: center;
+}
+.sidebar-nav li a:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+/* Active (Orange) Style */
+.sidebar-nav li.active a {
+    background-color: #ff5722;
+    color: #fff;
+    border-radius: 0 30px 30px 0;
+    margin-right: 25px;
+    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
+}
+/* Watermark Footer */
+.sidebar-footer {
+    padding: 20px;
+    text-align: center;
+    font-size: 0.75rem;
+    border-top: 1px solid #1e293b;
+    letter-spacing: 1px;
+    background-color: #090d1a;
+}
+.sidebar-footer .watermark-text {
+    color: #64748b;
+    margin-bottom: 5px;
+    display: block;
+    text-transform: uppercase;
+}
+.sidebar-footer .watermark-version {
+    color: #ff5722;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+/* Main Content Adjustment */
+.main-content {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+}
+    </style>
+</body>
+</html>

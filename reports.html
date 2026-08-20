@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Reports - Attenda 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandOrange: '#ff6b00',
+                        brandCharcoal: '#1e293b',
+                    }
+                }
+            }
+        }
+
+        // Toggle Filter Inputs (Monthly / Yearly)
+        function toggleFilterInputs() {
+            var filterType = document.getElementById("filter_type").value;
+            var monthBox = document.getElementById("monthBox");
+            var yearBox = document.getElementById("yearBox");
+
+            if (filterType === 'monthly') {
+                monthBox.style.display = "block";
+                yearBox.style.display = "none";
+            } else {
+                monthBox.style.display = "none";
+                yearBox.style.display = "block";
+            }
+        }
+
+        window.onload = function() {
+            toggleFilterInputs();
+            {% if filter_type == 'yearly' %}
+                document.getElementById("filter_type").value = "yearly";
+                toggleFilterInputs();
+            {% endif %}
+        }
+    </script>
+</head>
+<body class="bg-gray-50 flex h-screen font-sans overflow-hidden antialiased">
+
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <div>
+            <!-- Brand Logo -->
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-graduation-cap"></i>
+                Attenda <span>2026</span>
+            </div>
+
+            <!-- Navigation Links -->
+            <ul class="sidebar-nav">
+                <li class="{% if request.endpoint == 'index' %}active{% endif %}">
+                    <a href="{{ url_for('index') }}">
+                        <i class="fa-solid fa-house"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'scanner' %}active{% endif %}">
+                    <a href="{{ url_for('scanner') }}">
+                        <i class="fa-solid fa-qrcode"></i>
+                        QR Scanner
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'register' %}active{% endif %}">
+                    <a href="{{ url_for('register') }}">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Register Student
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'students' %}active{% endif %}">
+                    <a href="{{ url_for('students') }}">
+                        <i class="fa-solid fa-users"></i>
+                        Student Database
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'reports' %}active{% endif %}">
+                    <a href="{{ url_for('reports') }}">
+                        <i class="fa-solid fa-file-lines"></i>
+                        Reports
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'settings' %}active{% endif %}">
+                    <a href="{{ url_for('settings') }}">
+                        <i class="fa-solid fa-gear"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Watermark Footer -->
+        <div class="sidebar-footer">
+            <span class="watermark-text">By Ransithu Wave Lk</span>
+            <span class="watermark-version">Version 1.1</span>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="main-content flex-1 flex flex-col h-screen">
+        <header class="bg-white shadow-sm border-b border-gray-200 z-10 flex justify-between items-center px-6 py-4">
+            <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-brandOrange"></i> Student Attendance & Fee Report
+            </h1>
+            
+            <!-- Back to Home Button -->
+            <a href="{{ url_for('index') }}" class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-2 px-4 rounded-lg text-sm shadow transition flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Back to Home
+            </a>
+        </header>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto p-6 space-y-6">
+
+            <!-- Filter Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <form method="POST" action="{{ url_for('reports') }}">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                        
+                        <!-- Select Student -->
+                        <div class="md:col-span-4">
+                            <label for="index_no" class="block text-xs font-bold text-gray-600 uppercase mb-1">Select Student (Index / Name):</label>
+                            <select name="index_no" id="index_no" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brandOrange">
+                                <option value="">-- Choose Student --</option>
+                                {% for s in students %}
+                                    <option value="{{ s.index_no }}" {% if selected_index == s.index_no %}selected{% endif %}>
+                                        {{ s.index_no }} - {{ s.student_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Report Type -->
+                        <div class="md:col-span-3">
+                            <label for="filter_type" class="block text-xs font-bold text-gray-600 uppercase mb-1">Report Type:</label>
+                            <select name="filter_type" id="filter_type" onchange="toggleFilterInputs()" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brandOrange">
+                                <option value="monthly" {% if filter_type == 'monthly' %}selected{% endif %}>Monthly Report</option>
+                                <option value="yearly" {% if filter_type == 'yearly' %}selected{% endif %}>Yearly Report</option>
+                            </select>
+                        </div>
+
+                        <!-- Month Box -->
+                        <div class="md:col-span-3" id="monthBox">
+                            <label for="month_val" class="block text-xs font-bold text-gray-600 uppercase mb-1">Select Month:</label>
+                            <input type="month" name="month_val" id="month_val" value="{{ month_val }}" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brandOrange">
+                        </div>
+
+                        <!-- Year Box -->
+                        <div class="md:col-span-3" id="yearBox" style="display: none;">
+                            <label for="year_val" class="block text-xs font-bold text-gray-600 uppercase mb-1">Select Year:</label>
+                            <input type="number" name="year_val" id="year_val" placeholder="2026" value="{{ year_val }}" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brandOrange">
+                        </div>
+
+                        <!-- Generate Button -->
+                        <div class="md:col-span-2">
+                            <button type="submit" class="w-full bg-brandOrange hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-lg text-sm shadow transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-magnifying-glass"></i> Generate
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+            <!-- Excel Download Button -->
+            <div>
+                <a href="{{ url_for('download_attendance_excel') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm shadow transition inline-flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> Download Attendance Report (Excel)
+                </a>
+            </div>
+
+            <!-- Report Results Section -->
+            {% if report_data %}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-slate-900 text-white p-5 border-b-2 border-brandOrange flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                        <div>
+                            <h3 class="font-bold text-base flex items-center gap-2">
+                                <i class="fa-solid fa-user-graduate text-brandOrange"></i> Report for: {{ report_data.student.student_name }} <span class="text-brandOrange">({{ report_data.student.index_no }})</span>
+                            </h3>
+                            <p class="text-xs text-gray-300 mt-1">Class: <span class="font-semibold text-white">{{ report_data.student.class_name }}</span> | Target Period: <span class="font-semibold text-white">{{ report_data.target }}</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 space-y-6">
+
+                        <!-- Attendance Summary -->
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2 border-b pb-2">
+                                <i class="fa-solid fa-calendar-check text-brandOrange"></i> 1. Attendance Records (පැමිණීමේ වාර්තාව)
+                            </h4>
+                            <p class="text-xs text-gray-500 mb-3">Total Days Present in this period: <strong class="text-slate-800">{{ report_data.attendance | length }}</strong></p>
+
+                            <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-gray-50 text-gray-400 text-xs uppercase font-semibold border-b border-gray-100">
+                                            <th class="px-6 py-3">Date</th>
+                                            <th class="px-6 py-3">Time</th>
+                                            <th class="px-6 py-3">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-sm text-gray-600 divide-y divide-gray-100">
+                                        {% for att in report_data.attendance %}
+                                        <tr class="hover:bg-gray-50/80 transition">
+                                            <td class="px-6 py-3 font-semibold text-slate-800">{{ att.date }}</td>
+                                            <td class="px-6 py-3 text-gray-500">{{ att.time }}</td>
+                                            <td class="px-6 py-3">
+                                                <span class="text-xs bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded">
+                                                    {{ att.status }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="3" class="px-6 py-6 text-center text-gray-400 text-xs">No attendance records found for this period.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Fee Summary -->
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2 border-b pb-2">
+                                <i class="fa-solid fa-wallet text-brandOrange"></i> 2. Class Fee Payment Records (ගාස්තු ගෙවීම් වාර්තාව)
+                            </h4>
+
+                            <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-gray-50 text-gray-400 text-xs uppercase font-semibold border-b border-gray-100">
+                                            <th class="px-6 py-3">Date Paid</th>
+                                            <th class="px-6 py-3">Time</th>
+                                            <th class="px-6 py-3">Fee Details / Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-sm text-gray-600 divide-y divide-gray-100">
+                                        {% for fee in report_data.fees %}
+                                        <tr class="hover:bg-gray-50/80 transition">
+                                            <td class="px-6 py-3 font-semibold text-slate-800">{{ fee.date }}</td>
+                                            <td class="px-6 py-3 text-gray-500">{{ fee.time }}</td>
+                                            <td class="px-6 py-3">
+                                                <span class="text-xs bg-blue-100 text-blue-700 font-bold px-2.5 py-1 rounded">
+                                                    {{ fee.amount_status }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="3" class="px-6 py-6 text-center text-gray-400 text-xs">No fee payment records found for this period.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            {% endif %}
+
+        </main>
+    </div>
+
+    <style>
+/* =========================================
+    NEW SIDEBAR STYLING
+========================================= */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
+    background-color: #0c1222; /* Dark Navy Background */
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 0 0 0;
+    z-index: 1000;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+}
+.sidebar-brand {
+    font-size: 1.6rem;
+    font-weight: 800;
+    padding: 10px 20px 30px 25px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sidebar-brand i {
+    color: #ffb800; /* Yellow Cap */
+    font-size: 1.5rem;
+}
+.sidebar-brand span {
+    color: #ff5722; /* Orange text */
+}
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+.sidebar-nav li {
+    margin-bottom: 8px;
+}
+.sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 25px;
+    color: #8a99af; /* Inactive greyish text */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.sidebar-nav li a i {
+    font-size: 1.2rem;
+    width: 25px;
+    text-align: center;
+}
+.sidebar-nav li a:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+/* Active (Orange) Style */
+.sidebar-nav li.active a {
+    background-color: #ff5722;
+    color: #fff;
+    border-radius: 0 30px 30px 0;
+    margin-right: 25px;
+    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
+}
+/* Watermark Footer */
+.sidebar-footer {
+    padding: 20px;
+    text-align: center;
+    font-size: 0.75rem;
+    border-top: 1px solid #1e293b;
+    letter-spacing: 1px;
+    background-color: #090d1a;
+}
+.sidebar-footer .watermark-text {
+    color: #64748b;
+    margin-bottom: 5px;
+    display: block;
+    text-transform: uppercase;
+}
+.sidebar-footer .watermark-version {
+    color: #ff5722;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+/* Main Content Adjustment */
+.main-content {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+}
+    </style>
+</body>
+</html>

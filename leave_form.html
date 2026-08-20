@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Leave Request - Attenda 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandOrange: '#ff6b00',
+                    }
+                }
+            }
+        }
+
+        window.onload = function() {
+            var dateInput = document.getElementById('date');
+            if(!dateInput.value) {
+                dateInput.valueAsDate = new Date();
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans antialiased flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-gray-200">
+        <div class="bg-slate-900 p-6 text-center border-b-4 border-brandOrange">
+            <h1 class="text-2xl font-black text-white tracking-widest uppercase">Leave Request</h1>
+            <p class="text-gray-400 text-sm mt-1">ආයතනය දැනුවත් කිරීම</p>
+        </div>
+
+        <div class="p-6">
+            {% if success_msg %}
+            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-r-lg">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-circle-check text-green-500 text-xl mr-3"></i>
+                    <p class="text-green-700 text-sm font-bold">{{ success_msg }}</p>
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="/" class="text-xs bg-green-200 text-green-800 px-4 py-2 rounded-lg font-bold hover:bg-green-300 transition">නැවතත් පිටුවට පිවිසෙන්න</a>
+                </div>
+            </div>
+            {% else %}
+
+            <form method="POST" action="/" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ශිෂ්‍ය අංකය (Index Number)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-id-card text-gray-400"></i>
+                        </div>
+                        <input type="text" name="index_no" placeholder="e.g. ST-1001" required
+                               class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-brandOrange/50 focus:border-brandOrange transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">නිවාඩු ගන්නා දිනය (Date)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-calendar-day text-gray-400"></i>
+                        </div>
+                        <input type="date" name="date" id="date" required
+                               class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-brandOrange/50 focus:border-brandOrange transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">හේතුව (Reason)</label>
+                    <div class="relative">
+                        <div class="absolute top-3 left-3 pointer-events-none">
+                            <i class="fa-solid fa-pen text-gray-400"></i>
+                        </div>
+                        <textarea name="reason" rows="3" placeholder="අසනීප තත්වයක් / වෙනත් ගමනක් යාමට ඇති බැවින්..." required
+                                  class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandOrange/50 focus:border-brandOrange transition"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-brandOrange hover:bg-orange-600 text-white font-bold text-lg py-3 rounded-xl shadow-lg hover:shadow-xl transition duration-200 transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-paper-plane mr-2"></i> දැනුවත් කරන්න
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        <div class="bg-gray-50 p-4 text-center border-t border-gray-100">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Powered by Ransithu Wave LK</p>
+        </div>
+    </div>
+     <style>/* =========================================
+   NEW SIDEBAR STYLING
+========================================= */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
+    background-color: #0c1222; /* Dark Navy Background */
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 0 0 0;
+    z-index: 1000;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+}
+.sidebar-brand {
+    font-size: 1.6rem;
+    font-weight: 800;
+    padding: 10px 20px 30px 25px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sidebar-brand i {
+    color: #ffb800; /* Yellow Cap */
+    font-size: 1.5rem;
+}
+.sidebar-brand span {
+    color: #ff5722; /* Orange text */
+}
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+.sidebar-nav li {
+    margin-bottom: 8px;
+}
+.sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 25px;
+    color: #8a99af; /* Inactive greyish text */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.sidebar-nav li a i {
+    font-size: 1.2rem;
+    width: 25px;
+    text-align: center;
+}
+.sidebar-nav li a:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+/* Active (Orange) Style */
+.sidebar-nav li.active a {
+    background-color: #ff5722;
+    color: #fff;
+    border-radius: 0 30px 30px 0;
+    margin-right: 25px;
+    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
+}
+/* Watermark Footer */
+.sidebar-footer {
+    padding: 20px;
+    text-align: center;
+    font-size: 0.75rem;
+    border-top: 1px solid #1e293b;
+    letter-spacing: 1px;
+    background-color: #090d1a;
+}
+.sidebar-footer .watermark-text {
+    color: #64748b;
+    margin-bottom: 5px;
+    display: block;
+    text-transform: uppercase;
+}
+.sidebar-footer .watermark-version {
+    color: #ff5722;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+/* Main Content Adjustment */
+.main-content {
+    margin-left: 260px;
+    padding: 30px;
+}
+
+</style>
+
+</body>
+</html>

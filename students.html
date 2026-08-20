@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Attenda 2026 - Student Database</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandOrange: '#ff6b00',
+                        brandCharcoal: '#1e293b',
+                    }
+                }
+            }
+        }
+
+        // JS Functions for Edit Modal
+        function openEditModal(indexNo, name, className) {
+            document.getElementById('editForm').action = '/edit_student/' + indexNo;
+            document.getElementById('editIndexNo').value = indexNo;
+            document.getElementById('editName').value = name;
+            document.getElementById('editClass').value = className;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        // Live Search Function
+        function searchStudents() {
+            let input = document.getElementById('searchInput');
+            let filter = input.value.toLowerCase();
+            let table = document.getElementById('studentsTable');
+            let tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) {
+                let tdIndex = tr[i].getElementsByTagName('td')[0];
+                let tdName = tr[i].getElementsByTagName('td')[1];
+                
+                if (tdIndex || tdName) {
+                    let indexText = tdIndex ? tdIndex.textContent || tdIndex.innerText : '';
+                    let nameText = tdName ? tdName.textContent || tdName.innerText : '';
+                    
+                    if (indexText.toLowerCase().indexOf(filter) > -1 || nameText.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 flex h-screen font-sans overflow-hidden antialiased">
+
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <div>
+            <!-- Brand Logo -->
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-graduation-cap"></i>
+                Attenda <span>2026</span>
+            </div>
+
+            <!-- Navigation Links -->
+            <ul class="sidebar-nav">
+                <li class="{% if request.endpoint == 'index' %}active{% endif %}">
+                    <a href="{{ url_for('index') }}">
+                        <i class="fa-solid fa-house"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'scanner' %}active{% endif %}">
+                    <a href="{{ url_for('scanner') }}">
+                        <i class="fa-solid fa-qrcode"></i>
+                        QR Scanner
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'register' %}active{% endif %}">
+                    <a href="{{ url_for('register') }}">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Register Student
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'students' %}active{% endif %}">
+                    <a href="{{ url_for('students') }}">
+                        <i class="fa-solid fa-users"></i>
+                        Student Database
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'reports' %}active{% endif %}">
+                    <a href="{{ url_for('reports') }}">
+                        <i class="fa-solid fa-file-lines"></i>
+                        Reports
+                    </a>
+                </li>
+                <li class="{% if request.endpoint == 'settings' %}active{% endif %}">
+                    <a href="{{ url_for('settings') }}">
+                        <i class="fa-solid fa-gear"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Watermark Footer -->
+        <div class="sidebar-footer">
+            <span class="watermark-text">By Ransithu Wave Lk</span>
+            <span class="watermark-version">Version 1.1</span>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="main-content flex-1 flex flex-col h-screen">
+        <header class="bg-white shadow-sm border-b border-gray-200 z-10 flex justify-between items-center px-6 py-4">
+            <h1 class="text-xl font-bold text-slate-800">Registered Student Directory</h1>
+            
+            <!-- Right side buttons (ZIP Download & Add Student) -->
+            <div class="flex items-center gap-3">
+                <a href="/download-batch-qrs" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-archive"></i> Download All QRs (ZIP)
+                </a>
+                <a href="/register" class="bg-brandOrange hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg text-sm shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus"></i> + Add Student
+                </a>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto p-6">
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-5 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50/50">
+                    <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-users text-brandOrange"></i> Student Master Database
+                    </h2>
+
+                    <!-- Live Search Input Bar -->
+                    <div class="w-full md:w-72">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </span>
+                            <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search Index or Name..." class="w-full pl-9 pr-4 py-1.5 bg-white border border-gray-300 rounded-lg text-xs focus:outline-none focus:border-brandOrange shadow-sm">
+                        </div>
+                    </div>
+
+                    <span class="text-xs bg-orange-100 text-brandOrange px-3 py-1 rounded-full font-bold">
+                        Total: {{ students|length }}
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" id="studentsTable">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-400 text-xs uppercase font-semibold border-b border-gray-100">
+                                <th class="px-6 py-4">Index No</th>
+                                <th class="px-6 py-4">Student Name</th>
+                                <th class="px-6 py-4">Class</th>
+                                <th class="px-6 py-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-gray-600 divide-y divide-gray-100">
+                            {% for student in students %}
+                            <tr class="hover:bg-gray-50/80 transition">
+                                <td class="px-6 py-4 font-bold text-slate-800">{{ student.index_no }}</td>
+                                <td class="px-6 py-4 font-semibold text-slate-700">{{ student.student_name }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="text-xs bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded">
+                                        {{ student.class_name }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <!-- EDIT BUTTON -->
+                                        <button onclick='openEditModal({{ student.index_no | tojson }}, {{ student.student_name | tojson }}, {{ student.class_name | tojson }})'
+                                                class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1 border border-blue-200">
+                                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                                        </button>
+
+                                        <!-- DELETE BUTTON -->
+                                        <a href="/delete_student/{{ student.index_no }}"
+                                           onclick="return confirm('ඔබට සැබවින්ම මෙම ශිෂ්‍යයා පද්ධතියෙන් ඉවත් කිරීමට අවශ්‍යද?');"
+                                           class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1 border border-red-200">
+                                            <i class="fa-solid fa-trash-can"></i> Delete
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-8 text-center text-gray-400">පද්ධතියේ තවම කිසිදු ශිෂ්‍යයෙක් සටහන් වී නොමැත.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- EDIT STUDENT MODAL -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md overflow-hidden transform transition-all">
+            <div class="bg-slate-900 text-white p-4 flex justify-between items-center border-b-2 border-brandOrange">
+                <h3 class="font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-brandOrange"></i> Edit Student Details
+                </h3>
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-white text-lg font-bold">&times;</button>
+            </div>
+
+            <form id="editForm" method="POST" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Index Number (Read Only)</label>
+                    <input type="text" id="editIndexNo" readonly class="w-full bg-gray-100 border border-gray-200 text-slate-700 font-bold rounded-lg p-2.5 text-sm cursor-not-allowed">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Student Name</label>
+                    <input type="text" id="editName" name="student_name" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brandOrange">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Class</label>
+                    <select id="editClass" name="class_name" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brandOrange">
+                        {% for c in classes %}
+                            <option value="{{ c.grade }} - {{ c.class_name }}">{{ c.grade }} - {{ c.class_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeEditModal()" class="w-1/2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-xs transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="w-1/2 bg-brandOrange hover:bg-orange-600 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <style>
+/* =========================================
+    NEW SIDEBAR STYLING
+========================================= */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
+    background-color: #0c1222; /* Dark Navy Background */
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 0 0 0;
+    z-index: 1000;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+}
+.sidebar-brand {
+    font-size: 1.6rem;
+    font-weight: 800;
+    padding: 10px 20px 30px 25px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sidebar-brand i {
+    color: #ffb800; /* Yellow Cap */
+    font-size: 1.5rem;
+}
+.sidebar-brand span {
+    color: #ff5722; /* Orange text */
+}
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+.sidebar-nav li {
+    margin-bottom: 8px;
+}
+.sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 25px;
+    color: #8a99af; /* Inactive greyish text */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.sidebar-nav li a i {
+    font-size: 1.2rem;
+    width: 25px;
+    text-align: center;
+}
+.sidebar-nav li a:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+/* Active (Orange) Style */
+.sidebar-nav li.active a {
+    background-color: #ff5722;
+    color: #fff;
+    border-radius: 0 30px 30px 0;
+    margin-right: 25px;
+    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
+}
+/* Watermark Footer */
+.sidebar-footer {
+    padding: 20px;
+    text-align: center;
+    font-size: 0.75rem;
+    border-top: 1px solid #1e293b;
+    letter-spacing: 1px;
+    background-color: #090d1a;
+}
+.sidebar-footer .watermark-text {
+    color: #64748b;
+    margin-bottom: 5px;
+    display: block;
+    text-transform: uppercase;
+}
+.sidebar-footer .watermark-version {
+    color: #ff5722;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+/* Main Content Adjustment */
+.main-content {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+}
+    </style>
+</body>
+</html>
