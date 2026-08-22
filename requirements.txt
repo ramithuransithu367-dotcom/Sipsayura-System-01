@@ -1,0 +1,6 @@
+flask
+gunicorn
+twilio
+pandas
+qrcode
+Pillow
